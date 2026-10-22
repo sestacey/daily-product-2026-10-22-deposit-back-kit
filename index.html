@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit Back Kit — Security Deposit Recovery Kit</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2230; --card2:#223048; --accent:#ffb020; --accent2:#37c26a;
+    --text:#eef3f8; --muted:#9fb0c3; --danger:#ff5d5d; --line:#2c3a52;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;padding:0 0 60px}
+  header{background:linear-gradient(135deg,#101826,#1c2940);padding:48px 24px;text-align:center;border-bottom:1px solid var(--line)}
+  header h1{font-size:2rem;letter-spacing:-.5px}
+  header h1 .accent{color:var(--accent)}
+  header p{color:var(--muted);max-width:640px;margin:12px auto 0}
+  .badge{display:inline-block;background:var(--accent);color:#111;font-weight:700;font-size:.8rem;padding:4px 12px;border-radius:999px;margin-bottom:14px}
+  nav.tabs{position:sticky;top:0;z-index:10;background:#0c1119;border-bottom:1px solid var(--line);display:flex;justify-content:center;gap:4px;flex-wrap:wrap;padding:10px}
+  nav.tabs button{background:none;border:none;color:var(--muted);font-size:1rem;font-weight:600;padding:10px 18px;cursor:pointer;border-radius:8px}
+  nav.tabs button.active{background:var(--card);color:var(--accent);box-shadow:inset 0 0 0 1px var(--line)}
+  nav.tabs button .step{display:block;font-size:.7rem;font-weight:400;letter-spacing:1px;text-transform:uppercase}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 20px}
+  section.tab{display:none}
+  section.tab.active{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px}
+  .card h2{margin-bottom:6px}
+  .card .sub{color:var(--muted);font-size:.95rem;margin-bottom:16px}
+  .q{margin-bottom:20px}
+  .q label{display:block;font-weight:600;margin-bottom:8px}
+  .opts{display:grid;gap:8px}
+  .opts button{background:var(--card2);border:1px solid var(--line);color:var(--text);text-align:left;padding:12px 14px;border-radius:10px;cursor:pointer;font-size:.95rem}
+  .opts button:hover{border-color:var(--accent)}
+  .opts button.sel{background:#3a2c08;border-color:var(--accent);color:#ffd57a}
+  .btn{display:inline-block;background:var(--accent);color:#111;border:none;font-weight:700;font-size:1rem;padding:14px 26px;border-radius:10px;cursor:pointer;margin-top:8px}
+  .btn.secondary{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .btn.small{padding:9px 16px;font-size:.9rem}
+  .verdict{display:flex;gap:14px;align-items:flex-start;border-radius:12px;padding:18px;margin-bottom:12px}
+  .verdict .dot{flex:0 0 44px;height:44px;border-radius:50%;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+  .verdict h3{font-size:1.05rem;margin-bottom:4px}
+  .verdict p{font-size:.92rem;color:var(--muted)}
+  .verdict p b{color:var(--text)}
+  .verdict.strong{background:#0e1a12;border:1px solid #2f6b44}
+  .verdict.strong .dot{background:var(--accent2)}
+  .verdict.mod{background:#1a1408;border:1px solid #6b5426}
+  .verdict.mod .dot{background:var(--accent)}
+  .verdict.weak{background:#2a1414;border:1px solid #6b2d2d}
+  .verdict.weak .dot{background:var(--danger)}
+  .scorebar{height:14px;background:var(--card2);border-radius:999px;overflow:hidden;margin:10px 0 18px}
+  .scorebar>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--danger))}
+  input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:#0e141f;border:1px solid var(--line);color:var(--text);padding:11px 13px;border-radius:9px;font-size:1rem;margin-top:6px}
+  textarea{min-height:110px;font-size:.92rem;resize:vertical}
+  textarea.letter{min-height:480px;font-family:Georgia,'Times New Roman',serif;font-size:.95rem;line-height:1.7}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .field{margin-bottom:14px}
+  .field label{font-weight:600;font-size:.92rem}
+  .field small{color:var(--muted);display:block;margin-top:4px}
+  .result{background:#0e1a12;border:1px solid #2f6b44;border-radius:12px;padding:18px;margin-top:18px}
+  .result h3{color:var(--accent2);margin-bottom:10px}
+  .num{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+  .num:last-child{border:none}
+  .num b{font-size:1.05rem}
+  .check-item{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--line);cursor:pointer;align-items:flex-start}
+  .check-item:last-child{border:none}
+  .check-item input{margin-top:4px;transform:scale(1.25)}
+  .check-item.done label{color:var(--muted);text-decoration:line-through}
+  .statetable{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:10px}
+  .statetable th,.statetable td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  .statetable th{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+  .disclaimer{background:#1a1408;border:1px solid #6b5426;border-radius:12px;padding:16px;margin-top:24px;font-size:.88rem;color:var(--muted)}
+  .disclaimer b{color:var(--accent)}
+  .note{font-size:.85rem;color:var(--muted);margin-top:8px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge">DEPOSIT BACK KIT</div>
+  <h1>Get Your <span class="accent">Security Deposit</span> Back</h1>
+  <p>Diagnose your case strength, generate a state-law demand letter, and validate your evidence before you send it. Landlords count on you giving up — don't.</p>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="t1"><span class="step">Step 1</span>Diagnose</button>
+  <button data-tab="t2"><span class="step">Step 2</span>Generate</button>
+  <button data-tab="t3"><span class="step">Step 3</span>Validate</button>
+</nav>
+<div class="wrap">
+
+<!-- ============ TAB 1: DIAGNOSE ============ -->
+<section class="tab active" id="t1">
+  <div class="card">
+    <h2>1 · Diagnose your case strength</h2>
+    <p class="sub">Answer 10 questions. You'll get a case-strength score, your state's deadline, and the exact penalty math your landlord is risking.</p>
+    <div id="quiz"></div>
+    <button class="btn" onclick="scoreQuiz()">Get my case score</button>
+    <div id="verdict" class="hidden"></div>
+  </div>
+  <div class="card">
+    <h2>Verified state rules</h2>
+    <p class="sub">Deadlines and penalty rules checked against the actual statutes on 2026-10-22. States not listed: search "[your state] attorney general security deposit" for the authoritative rules.</p>
+    <table class="statetable">
+      <tr><th>State</th><th>Return deadline</th><th>Bad-faith penalty</th><th>Statute</th></tr>
+      <tr><td>California</td><td>21 days after move-out</td><td>Up to 2× deposit</td><td>Civ. Code §1950.5(l)</td></tr>
+      <tr><td>Texas</td><td>30 days after surrender (after tenant gives written forwarding address)</td><td>$100 + 3× wrongfully withheld + attorney's fees</td><td>Prop. Code §92.109</td></tr>
+      <tr><td>Florida</td><td>15 days if no claim; 30 days to mail certified claim notice (claim forfeited if missed)</td><td>No multiplier verified — claim forfeiture + prevailing-party attorney's fees</td><td>§83.49(3)</td></tr>
+      <tr><td>Massachusetts</td><td>30 days after termination</td><td>3× deposit/balance + 5% interest + costs + attorney's fees</td><td>Ch. 186 §15B(7)</td></tr>
+    </table>
+    <p class="note">General information only — not legal advice. Verify against the current statute before citing it.</p>
+  </div>
+</section>
+
+<!-- ============ TAB 2: GENERATE ============ -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>2 · Generate your demand letter</h2>
+    <p class="sub">Fill in the details. The letter cites your state's statute, itemizes the dispute, and shows the penalty math your landlord faces. Print it and send it <b>certified mail, return receipt requested</b>.</p>
+    <div class="grid2">
+      <div class="field"><label>Your full name</label><input type="text" id="g_tname" placeholder="Jane Tenant"></div>
+      <div class="field"><label>Your forwarding address</label><input type="text" id="g_taddr" placeholder="123 New St, Apt 4, Austin, TX 78701"></div>
+      <div class="field"><label>Landlord / management company</label><input type="text" id="g_lname" placeholder="ABC Properties LLC"></div>
+      <div class="field"><label>Landlord's address</label><input type="text" id="g_laddr" placeholder="456 Main St, Austin, TX 78702"></div>
+      <div class="field"><label>Rental property address</label><input type="text" id="g_paddr" placeholder="789 Oak Ave, Unit 2, Austin, TX 78703"></div>
+      <div class="field"><label>Move-out date</label><input type="date" id="g_mdate"></div>
+      <div class="field"><label>State</label>
+        <select id="g_state">
+          <option value="CA">California</option>
+          <option value="TX">Texas</option>
+          <option value="FL">Florida</option>
+          <option value="MA">Massachusetts</option>
+          <option value="OTHER">Other / not listed</option>
+        </select>
+      </div>
+      <div class="field"><label>Total security deposit</label><input type="number" id="g_dep" placeholder="1500" min="0"></div>
+      <div class="field"><label>Amount wrongfully withheld</label><input type="number" id="g_with" placeholder="900" min="0"><small>What they kept that you dispute — not legitimate damage.</small></div>
+      <div class="field"><label>Disputed deductions (itemize)</label><textarea id="g_items" placeholder="- $400 'cleaning' — unit was professionally cleaned, receipt attached&#10;- $300 carpet replacement — 4-year-old carpet, normal wear&#10;- $200 painting — no damage beyond nail holes"></textarea></div>
+      <div class="field"><label>Payment deadline (days from letter date)</label><input type="number" id="g_days" value="14" min="1"></div>
+    </div>
+    <button class="btn" onclick="genLetter()">Generate demand letter</button>
+    <button class="btn secondary small" onclick="copyLetter()">Copy to clipboard</button>
+    <div id="letterOut" class="hidden">
+      <div class="field" style="margin-top:16px"><label>Your letter — review, then print and mail certified</label>
+      <textarea class="letter" id="letterText" readonly></textarea></div>
+    </div>
+    <div id="mathOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>Small-claims filing worksheet</h2>
+    <p class="sub">If the demand letter gets no response, small-claims court is the escalation. Filing fees are typically $30–$75 depending on the state and claim size — <b>verify with your county court</b>; that range is an estimate, not a quote.</p>
+    <div class="grid2">
+      <div class="field"><label>County / court</label><input type="text" id="s_court" placeholder="Travis County Justice Court"></div>
+      <div class="field"><label>Claim amount (deposit + penalties + fees)</label><input type="number" id="s_amt" placeholder="0"><small>Use the penalty calculator on the Validate tab.</small></div>
+    </div>
+    <div class="field"><label>Your filing checklist (free text — print with your letter)</label>
+      <textarea id="s_notes" placeholder="1. Call the clerk to confirm filing fee and claim limit&#10;2. File the petition + attach lease, demand letter, certified-mail receipt&#10;3. Serve the landlord (court clerk or process server)&#10;4. Bring 3 copies of everything to the hearing"></textarea></div>
+    <p class="note">Check your state's small-claims limit before filing — many cap claims at $5,000–$10,000, and penalty multiples can push you over the limit (in which case you may need a higher court or a local attorney).</p>
+  </div>
+</section>
+
+<!-- ============ TAB 3: VALIDATE ============ -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>3 · Penalty calculator</h2>
+    <p class="sub">See exactly what your landlord is risking under your state's statute. This is your leverage number.</p>
+    <div class="grid2">
+      <div class="field"><label>State</label>
+        <select id="c_state">
+          <option value="CA">California</option>
+          <option value="TX">Texas</option>
+          <option value="FL">Florida</option>
+          <option value="MA">Massachusetts</option>
+          <option value="OTHER">Other / not listed</option>
+        </select>
+      </div>
+      <div class="field"><label>Total security deposit</label><input type="number" id="c_dep" placeholder="1500" min="0"></div>
+      <div class="field"><label>Amount wrongfully withheld</label><input type="number" id="c_with" placeholder="900" min="0"></div>
+      <div class="field"><label>Move-out date (for deadline)</label><input type="date" id="c_mdate"></div>
+    </div>
+    <button class="btn" onclick="calcPenalty()">Calculate exposure</button>
+    <div id="calcOut" class="hidden"></div>
+  </div>
+
+  <div class="card">
+    <h2>Evidence checklist</h2>
+    <p class="sub">Check off what you have. The more you check, the stronger the demand letter lands — and the stronger a small-claims filing is.</p>
+    <div id="evcheck">
+      <div class="check-item"><input type="checkbox" id="e1"><label for="e1"><b>Signed lease</b> — proves the deposit amount and terms</label></div>
+      <div class="check-item"><input type="checkbox" id="e2"><label for="e2"><b>Move-in condition report / photos</b> — dated proof of how the unit looked when you arrived</label></div>
+      <div class="check-item"><input type="checkbox" id="e3"><label for="e3"><b>Move-out photos/video</b> — dated, showing the unit's final condition</label></div>
+      <div class="check-item"><input type="checkbox" id="e4"><label for="e4"><b>Proof you gave a written forwarding address</b> — critical in Texas; the 30-day clock doesn't start without it</label></div>
+      <div class="check-item"><input type="checkbox" id="e5"><label for="e5"><b>The landlord's itemized deduction statement</b> — or proof they never sent one (missed deadlines = leverage)</label></div>
+      <div class="check-item"><input type="checkbox" id="e6"><label for="e6"><b>Receipts/invoices behind each deduction</b> — or proof the landlord refused to provide them</label></div>
+      <div class="check-item"><input type="checkbox" id="e7"><label for="e7"><b>All communications in writing</b> — emails, texts, letters (screenshots with dates)</label></div>
+      <div class="check-item"><input type="checkbox" id="e8"><label for="e8"><b>Cleaning/repair receipts of your own</b> — proof you left the unit in good condition</label></div>
+      <div class="check-item"><input type="checkbox" id="e9"><label for="e9"><b>Certified-mail receipt for your demand letter</b> — proof of delivery with the green card</label></div>
+    </div>
+    <div id="evscore" class="note" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Before-you-mail checklist</h2>
+    <p class="sub">Run this right before you print. One sloppy letter costs you your leverage.</p>
+    <div id="mailcheck">
+      <div class="check-item"><input type="checkbox" id="m1"><label for="m1">Correct state statute cited and quoted accurately</label></div>
+      <div class="check-item"><input type="checkbox" id="m2"><label for="m2">Penalty math double-checked against the calculator above</label></div>
+      <div class="check-item"><input type="checkbox" id="m3"><label for="m3">Firm payment deadline stated (14 days is standard)</label></div>
+      <div class="check-item"><input type="checkbox" id="m4"><label for="m4">Every disputed deduction itemized — no vague "you owe me money"</label></div>
+      <div class="check-item"><input type="checkbox" id="m5"><label for="m5">Sending via <b>certified mail, return receipt requested</b> — keep the green card</label></div>
+      <div class="check-item"><input type="checkbox" id="m6"><label for="m6">Kept a dated copy of the letter for your records</label></div>
+      <div class="check-item"><input type="checkbox" id="m7"><label for="m7">Calendared the deadline + the landlord's statutory return deadline</label></div>
+      <div class="check-item"><input type="checkbox" id="m8"><label for="m8">Have NOT threatened anything you won't actually do (no bluffs — follow through)</label></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn secondary small" onclick="resetChecks()">Reset checklists</button></div>
+  </div>
+
+  <div class="disclaimer">
+    <b>Not legal advice.</b> This kit provides general information based on publicly available statutes, checked 2026-10-22. Laws change and every situation is different. Before relying on any deadline or penalty figure, verify it against your state's current statute or check with your state's attorney general / a local tenant-rights clinic. If your claim is large, talk to a tenant attorney — many take deposit cases on contingency because fee-shifting statutes pay them.
+  </div>
+</section>
+</div>
+
+<script>
+/* ---- tab nav ---- */
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('section.tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ---- state data (verified 2026-10-22; not legal advice) ---- */
+const STATES = {
+  CA:{name:'California',statute:'California Civil Code §1950.5',deadline:'21 days after you moved out',days:21,
+      penalty:'up to 2× the security deposit if withheld in bad faith (§1950.5(l))',
+      exposure:function(d,w){return {lines:[['Wrongfully withheld',w],['Bad-faith penalty (up to 2× deposit)',2*d]],total:w+2*d,note:'Up to twice the full deposit, at the court\'s discretion — bad faith must be shown.'}}},
+  TX:{name:'Texas',statute:'Texas Property Code §§92.103, 92.104, 92.109',deadline:'30 days after surrender, AFTER you provide a written forwarding address (§92.103; §92.107)',days:30,
+      penalty:'$100 + 3× the portion wrongfully withheld + your reasonable attorney\'s fees (§92.109(a)); missed deadline = presumed bad faith (§92.109(d))',
+      exposure:function(d,w){return {lines:[['Wrongfully withheld',w],['Statutory $100',100],['3× wrongfully withheld',3*w],['Your attorney\'s fees','awarded']],total:w+100+3*w,note:'Bad faith is PRESUMED if the landlord missed the 30-day deadline — the burden flips to them (§92.109(d)).'}}},
+  FL:{name:'Florida',statute:'Florida Statutes §83.49',deadline:'15 days to return if no claim; 30 days to mail certified notice of claim — claim FORFEITED if missed (§83.49(3))',days:15,
+      penalty:'no statutory multiplier verified — missed deadlines forfeit the landlord\'s claim; prevailing party gets court costs + attorney\'s fees (§83.49(3)(c))',
+      exposure:function(d,w){return {lines:[['Wrongfully withheld',w],['Penalty multiplier','none verified in statute'],['Court costs + attorney\'s fees','awarded to prevailing party']],total:w,note:'Florida\'s power is procedural: miss the 30-day certified-notice window and the landlord forfeits the entire claim.'}}},
+  MA:{name:'Massachusetts',statute:'Mass. Gen. Laws ch. 186 §15B',deadline:'30 days after termination of tenancy',days:30,
+      penalty:'3× the deposit or balance + 5% interest + court costs + attorney\'s fees (§15B(7))',
+      exposure:function(d,w){return {lines:[['Wrongfully withheld',w],['Treble damages (3× the balance owed)',3*w],['Interest at 5% from due date','accruing'],['Court costs + attorney\'s fees','awarded']],total:w+3*w,note:'One of the strongest tenant statutes in the country. Wrong account, late return, or missing itemization each trigger it.'}}},
+  OTHER:{name:'your state',statute:'your state\'s security-deposit statute (verify via your state attorney general)',deadline:'check your state\'s deadline',days:null,
+      penalty:'varies by state — look up the penalty multiplier before citing it',
+      exposure:function(d,w){return {lines:[['Wrongfully withheld',w],['State penalty','verify — not in this kit\'s verified table']],total:w,note:'Search "[your state] attorney general security deposit" for the authoritative rules.'}}}
+};
+function fmt(n){return '$'+Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0})}
+
+/* ---- TAB 1: quiz ---- */
+const QUIZ = [
+  {q:'Your state',opts:[['California',4],['Texas',4],['Florida',4],['Massachusetts',4],['Other / not listed',2]]},
+  {q:'Did your landlord return the deposit or send an itemized deduction list by the legal deadline?',opts:[['No — they missed the deadline',10],['No response at all',8],['Yes, but the deductions look bogus',6],['Yes, and they were late sending it',6],['Yes, on time',0]]},
+  {q:'Did you provide a WRITTEN forwarding address?',opts:[['Yes',5],['No',0],['Not sure',2]]},
+  {q:'Do you have move-in condition photos AND a signed move-in checklist?',opts:[['Both',6],['Photos only',3],['Checklist only',3],['Neither',0]]},
+  {q:'Do you have dated move-out photos?',opts:[['Yes',6],['No',0]]},
+  {q:'Do the deductions look like normal wear & tear billed as "damage"?',opts:[['Yes — clearly',6],['Some of them',4],['Unsure',2],['No — the damage was real',0]]},
+  {q:'Did the landlord provide receipts/invoices for the deducted work?',opts:[['Refused or never sent',5],['No',3],['Yes',0]]},
+  {q:'Is your communication with the landlord in writing (email/text/letter)?',opts:[['Yes',4],['Mostly verbal',1],['No',0]]},
+  {q:'How long ago did you move out?',opts:[['Under 60 days',5],['2–6 months',3],['6–12 months',1],['Over a year',0]]},
+  {q:'Has the landlord made any written admissions (texts/emails) about the deposit?',opts:[['Yes',5],['No',0],['Not sure',1]]}
+];
+const answers = new Array(QUIZ.length).fill(null);
+function buildQuiz(){
+  const el = document.getElementById('quiz');
+  el.innerHTML = QUIZ.map((item,i)=>
+    '<div class="q"><label>'+(i+1)+'. '+item.q+'</label><div class="opts">'+
+    item.opts.map((o,j)=>'<button type="button" data-q="'+i+'" data-o="'+j+'">'+o[0]+'</button>').join('')+
+    '</div></div>').join('');
+  el.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.q, j=+b.dataset.o;
+    answers[i]=j;
+    el.querySelectorAll('button[data-q="'+i+'"]').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+  }));
+}
+buildQuiz();
+function scoreQuiz(){
+  if(answers.some(a=>a===null)){alert('Please answer all 10 questions first.');return;}
+  let score=0, max=0;
+  QUIZ.forEach((item,i)=>{score+=item.opts[answers[i]][1]; max+=Math.max(...item.opts.map(o=>o[1]));});
+  const pct=Math.round(100*score/max);
+  const stateIdx=answers[0];
+  const stateKey=['CA','TX','FL','MA','OTHER'][stateIdx];
+  const S=STATES[stateKey];
+  let cls,head,body;
+  if(pct>=70){cls='strong';head='Strong case — send the demand letter';
+    body='Your facts line up with the strongest deposit-recovery patterns: <b>missed deadlines, weak documentation from the landlord, and evidence you kept.</b> Go to Step 2 and generate your letter citing <b>'+S.statute+'</b>. Your landlord\'s deadline: <b>'+S.deadline+'</b>. Penalty exposure: <b>'+S.penalty+'</b>.';}
+  else if(pct>=45){cls='mod';head='Moderate case — gather, then send';
+    body='You have a real dispute, but gaps in your evidence could blunt it. Work the <b>evidence checklist on Step 3</b> first — especially the written forwarding address and dated photos — then generate the letter. Cite <b>'+S.statute+'</b>; landlord deadline: <b>'+S.deadline+'</b>.';}
+  else{cls='weak';head='Weak right now — don\'t send yet';
+    body='Sending a thin letter teaches the landlord you won\'t follow through. Your best move: <b>spend a week on evidence</b> (Step 3 checklist), then re-take this quiz. Note the deadline: <b>'+S.deadline+'</b> — and check your state\'s statute of limitations so you don\'t wait too long.';}
+  const v=document.getElementById('verdict');
+  v.className='';
+  v.innerHTML='<div class="verdict '+cls+'"><div class="dot">'+pct+'</div><div><h3>'+head+'</h3><p>'+body+'</p><div class="scorebar"><div style="width:'+pct+'%"></div></div><p style="font-size:.8rem">Case strength: '+pct+'/100</p></div></div>';
+  v.classList.remove('hidden');
+  v.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+/* ---- TAB 2: letter generator ---- */
+function genLetter(){
+  const tn=val('g_tname'),ta=val('g_taddr'),ln=val('g_lname'),la=val('g_laddr'),
+        pa=val('g_paddr'),md=val('g_mdate'),sk=document.getElementById('g_state').value,
+        dep=+val('g_dep')||0, wth=+val('g_with')||0, days=+val('g_days')||14,
+        items=val('g_items');
+  const S=STATES[sk];
+  if(!tn||!ln||!la||dep<=0||wth<=0){alert('Please fill in at least: your name, landlord name/address, deposit, and amount withheld.');return;}
+  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const dl=new Date(); dl.setDate(dl.getDate()+days);
+  const dlStr=dl.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const exp=S.exposure(dep,wth);
+  const letter =
+tn+'\n'+ta+'\n\n'+today+'\n\n'+ln+'\n'+la+'\n\n'+
+'RE: Demand for return of security deposit — '+pa+'\n\n'+
+'Dear '+ln+':\n\n'+
+'I am writing to demand the return of $'+wth.toLocaleString()+' wrongfully withheld from my security deposit of $'+dep.toLocaleString()+' for the rental at '+pa+(md?(', from which I moved out on '+new Date(md+'T12:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})):'')+'.\n\n'+
+'Under '+S.statute+', a landlord must return the deposit '+S.deadline+'. The statute provides: '+S.penalty+'.\n\n'+
+'The following deductions are disputed:\n'+(items?items.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>'• '+l).join('\n'):'• [itemize each disputed deduction with the amount and why it is improper]')+'\n\n'+
+'Total wrongfully withheld: $'+wth.toLocaleString()+'.\n\n'+
+'You are hereby demanded to remit $'+wth.toLocaleString()+' no later than '+dlStr+' ('+days+' days from this letter). If payment is not received by that date, I will pursue all remedies available under '+S.statute+', including filing in small-claims court for the deposit plus statutory penalties, court costs, and attorney\'s fees where allowed.\n\n'+
+'Please direct payment to the address above. This letter was sent via certified mail, return receipt requested, and a copy has been retained for my records.\n\n'+
+'Sincerely,\n\n'+tn;
+  document.getElementById('letterText').value=letter;
+  document.getElementById('letterOut').classList.remove('hidden');
+  const m=document.getElementById('mathOut');
+  m.innerHTML='<div class="result"><h3>Penalty math — what they\'re risking</h3>'+
+    exp.lines.map(l=>'<div class="num"><span>'+l[0]+'</span><b>'+(typeof l[1]==='number'?fmt(l[1]):l[1])+'</b></div>').join('')+
+    '<div class="num"><span><b>Potential total exposure</b></span><b>'+fmt(exp.total)+'+</b></div>'+
+    '<p class="note">'+exp.note+' Figures use the statute as verified 2026-10-22 — re-verify before filing. Not legal advice.</p></div>';
+  document.getElementById('letterOut').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function val(id){return document.getElementById(id).value.trim()}
+function copyLetter(){
+  const t=document.getElementById('letterText');
+  if(!t.value){alert('Generate the letter first.');return;}
+  t.select(); document.execCommand('copy');
+  alert('Letter copied — paste it into your word processor, print, and mail certified.');
+}
+
+/* ---- TAB 3: calculator + checklists ---- */
+function calcPenalty(){
+  const sk=document.getElementById('c_state').value, dep=+document.getElementById('c_dep').value||0,
+        wth=+document.getElementById('c_with').value||0,
+        md=document.getElementById('c_mdate').value;
+  const S=STATES[sk];
+  if(dep<=0||wth<=0){alert('Enter your deposit and the amount wrongfully withheld.');return;}
+  const exp=S.exposure(dep,wth);
+  let dlHtml='';
+  if(md&&S.days){const d=new Date(md+'T12:00'); d.setDate(d.getDate()+S.days);
+    dlHtml='<div class="num"><span>Landlord\'s return deadline ('+S.deadline+')</span><b>'+d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})+'</b></div>';}
+  const o=document.getElementById('calcOut');
+  o.innerHTML='<div class="result"><h3>'+S.name+' — landlord exposure</h3>'+
+    exp.lines.map(l=>'<div class="num"><span>'+l[0]+'</span><b>'+(typeof l[1]==='number'?fmt(l[1]):l[1])+'</b></div>').join('')+
+    '<div class="num"><span><b>Potential total</b></span><b>'+fmt(exp.total)+'+</b></div>'+dlHtml+
+    '<p class="note">'+exp.note+'</p><p class="note">Statute: '+S.statute+' (verified 2026-10-22). Not legal advice — verify before citing.</p></div>';
+  o.classList.remove('hidden');
+}
+function trackChecks(){
+  const ev=[...document.querySelectorAll('#evcheck input')];
+  const done=ev.filter(c=>c.checked).length;
+  document.getElementById('evscore').textContent='Evidence strength: '+done+' of '+ev.length+' items checked.';
+  ev.forEach(c=>{const item=c.closest('.check-item'); item.classList.toggle('done',c.checked);});
+}
+document.querySelectorAll('#evcheck input, #mailcheck input').forEach(c=>{
+  c.addEventListener('change',()=>{trackChecks(); c.closest('.check-item').classList.toggle('done',c.checked);});
+});
+trackChecks();
+function resetChecks(){
+  document.querySelectorAll('#evcheck input, #mailcheck input').forEach(c=>{c.checked=false;c.closest('.check-item').classList.remove('done');});
+  trackChecks();
+}
+</script>
+</body>
+</html>
